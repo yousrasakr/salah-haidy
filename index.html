@@ -694,13 +694,13 @@ function renderWish(wish){
   wishesList.appendChild(card);
 }
 
-// Live-updates: every guest's browser gets new wishes the instant
-// anyone submits one, no refresh needed.
 const wishesQuery = query(wishesCol, orderBy('createdAt', 'asc'));
 onSnapshot(wishesQuery, (snapshot) => {
   wishesList.innerHTML = '';
   snapshot.forEach(doc => renderWish(doc.data()));
   wishesEmpty.style.display = wishesList.children.length ? 'none' : 'block';
+}, (err) => {
+  console.error('LISTENER ERROR:', err);
 });
 
 wishSubmit.addEventListener('click', async () => {
@@ -717,7 +717,6 @@ wishSubmit.addEventListener('click', async () => {
 
   try {
     await addDoc(wishesCol, { name, msg, createdAt: serverTimestamp() });
-
     if (typeof window.spawnConfetti === 'function'){
       window.spawnConfetti(45, 0.5);
     }
@@ -725,11 +724,13 @@ wishSubmit.addEventListener('click', async () => {
     wishMsg.value = '';
   } catch (err){
     console.error(err);
-    wishSubmit.textContent = 'Something went wrong — try again';
-    setTimeout(() => wishSubmit.textContent = 'Send Wishes', 2200);
+    alert('ERROR SAVING: ' + err.message);
   } finally {
     wishSubmit.disabled = false;
-    if (wishSubmit.textContent === 'Sending...') wishSubmit.textContent = 'Send Wishes';
+    wishSubmit.textContent = 'Send Wishes';
+  }
+});
+</script>
   }
 });
 </body>
